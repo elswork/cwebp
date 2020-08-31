@@ -2,22 +2,11 @@ SNAME ?= cwebp
 RNAME ?= elswork/$(SNAME)
 VER ?= `cat VERSION`
 BASENAME ?= alpine:latest
-PARAM ?= someparameter
-DIR ?= somedir
-EXT ?= extension
-ARCH2 ?= armv7l
-ARCH3 ?= aarch64
-GOARCH := $(shell uname -m)
-ifeq ($(GOARCH),x86_64)
-	GOARCH := amd64
-	ARCHITECTURE := 64bit
-endif
-ifeq ($(GOARCH),aarch64)
-	ARCHITECTURE := ARM64
-endif
-ifeq ($(GOARCH),armv7l)
-	ARCHITECTURE := ARM
-endif
+PARAM ?= cwebp -lossles deftwork.png -o deftwork.webp
+OPT ?= -lossless
+DIR ?= $$(pwd)/data
+EXT ?= png
+FILE ?= deftwork
 
 # HELP
 # This will output the help for each task
@@ -31,7 +20,7 @@ help: ## This help.
 
 # DOCKER TASKS
 
-# New build way
+# Build image
 
 bootstrap: ## Start multicompiler
 	docker buildx inspect --bootstrap
@@ -44,45 +33,17 @@ buildx: ## Buildx the container
 	--build-arg BASEIMAGE=$(BASENAME) \
 	--build-arg VERSION=$(VER) .
 
-# Old build way
-
-debug: ## Debug the container
-	docker build -t $(RNAME):$(GOARCH) \
-	--build-arg BASEIMAGE=$(BASENAME) \
-	--build-arg VERSION=$(GOARCH)_$(VER) .
-build: ## Build the container
-	mkdir -p builds
-	docker build --no-cache -t $(RNAME):$(GOARCH) \
-	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-	--build-arg VCS_REF=`git rev-parse --short HEAD` \
-	--build-arg BASEIMAGE=$(BASENAME) \
-	--build-arg VERSION=$(GOARCH)_$(VER) \
-	. > builds/$(GOARCH)_$(VER)_`date +"%Y%m%d_%H%M%S"`.txt
-tag: ## Tag the container
-	docker tag $(RNAME):$(GOARCH) $(RNAME):$(GOARCH)_$(VER)
-push: ## Push the container
-	docker push $(RNAME):$(GOARCH)_$(VER)
-	docker push $(RNAME):$(GOARCH)
-deploy: build tag push
-manifest: ## Create an push manifest
-	docker manifest create $(RNAME):$(VER) \
-	$(RNAME):$(GOARCH)_$(VER) \
-	$(RNAME):$(ARCH2)_$(VER) \
-	$(RNAME):$(ARCH3)_$(VER)
-	docker manifest push --purge $(RNAME):$(VER)
-	docker manifest create $(RNAME):latest $(RNAME):$(GOARCH) \
-	$(RNAME):$(ARCH2) \
-	$(RNAME):$(ARCH3)
-	docker manifest push --purge $(RNAME):latest
-
 # Operations
 
 console: ## Start console in container
 	docker run -it --rm -v $(DIR):/data --entrypoint "/bin/ash" $(RNAME):$(VER)
-cwebp: ## Start an container command
-	docker run -it --rm -v $(DIR):/data $(RNAME):$(VER) cwebp $(PARAM)
+custom: ## Start a custom command in container
+	docker run -it --rm -v $(DIR):/data $(RNAME):$(VER) $(PARAM)
+start: ## Start a container command
+	docker run -it --rm -v $(DIR):/data $(RNAME):$(VER) cwebp $(OPT) $(FILE).$(EXT) -o $(FILE).webp
 bulk: ## Convert all .png from folder and subfolders recursively
-	docker run -it --rm -v $(DIR):/data $(RNAME):$(VER) find ./ -type f -name '*.$(EXT)' -exec sh -c 'cwebp -lossless $$1 -o "$${1%.$(EXT)}.webp"' _ {} \;
+	docker run -it --rm -v $(DIR):/data $(RNAME):$(VER) \
+	find ./ -type f -name '*.$(EXT)' -exec sh -c 'cwebp $(OPT) $$1 -o "$${1%.$(EXT)}.webp"' _ {} \;
 concurrent: ## Convert all .png concurrently
-	docker run -it --rm -v $(DIR):/data $(RNAME):$(VER) find ./ -type f -name '*.$(EXT)' | xargs -P 8 -I {} sh -c 'cwebp -lossless $1 -o "${1%.}$(EXT).webp"' _ {} \;
-
+	docker run -it --rm -v $(DIR):/data $(RNAME):$(VER) \
+	find ./ -type f -name '*.$(EXT)' | xargs -P 8 -I {} sh -c 'cwebp $(OPT) $$1 -o "$${1%.$(EXT)}.webp"' _ {} \;
