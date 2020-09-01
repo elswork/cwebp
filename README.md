@@ -14,7 +14,7 @@ A [Docker](http://docker.com) file to call [cwebp](https://developers.google.com
 | --- | --- | --- |
 | [![](https://img.shields.io/docker/pulls/elswork/cwebp.svg)](https://hub.docker.com/r/elswork/cwebp "cwebp on Docker Hub") | [![](https://img.shields.io/docker/stars/elswork/cwebp.svg)](https://hub.docker.com/r/elswork/cwebp "cwebp on Docker Hub") | [![](https://images.microbadger.com/badges/image/elswork/cwebp.svg)](https://microbadger.com/images/elswork/cwebp "cwebp on microbadger.com") |
 
-## Compatible architectures
+## Compatible Architectures
 
 This image has been builded using [buildx](https://docs.docker.com/buildx/working-with-buildx/) for this architectures: 
 - amd64 arm64 ppc64le s390x 386 arm/v7 arm/v6
@@ -39,7 +39,7 @@ make console DIR="$$(pwd)/data"
 ### Start a custom command in container
 
 ```bash
-docker run -it --rm -v /path-to-folder:/data elswork/cwebp cwebp -lossles deftwork.png -o deftwork.webp
+docker run -it --rm -v /path-to-folder:/data elswork/cwebp cwebp -lossless deftwork.png -o deftwork.webp
 ```
 or
 ```bash
@@ -47,7 +47,7 @@ make custom
 ```
 p.e. I've included some .png and .jpg files for testing purposes in "data" folder:
 ```bash
-make custom DIR="$$(pwd)/data" PARAM="cwebp -lossles deftwork.png -o deftwork.webp"
+make custom DIR="$$(pwd)/data" PARAM="cwebp -lossless deftwork.png -o deftwork.webp"
 ```
 
 - You can use change the command in (PARAM) dwebp, gif2webp, ... instead of cwebp.
@@ -55,7 +55,7 @@ make custom DIR="$$(pwd)/data" PARAM="cwebp -lossles deftwork.png -o deftwork.we
 ### Start a container command
 
 ```bash
-docker run -it --rm -v /path-to-folder:/data elswork/cwebp cwebp -lossles deftwork.png -o deftwork.webp
+docker run -it --rm -v /path-to-folder:/data elswork/cwebp cwebp -lossless deftwork.png -o deftwork.webp
 ```
 or
 ```bash
